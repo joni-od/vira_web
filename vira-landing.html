@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vira — Préstec d'objectes entre veïns</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal: #0D9488;
+    --teal-light: #6EE7B7;
+    --teal-dark: #059669;
+    --purple: #A78BFA;
+    --bg: #F7F9FF;
+    --white: #ffffff;
+    --text: #111827;
+    --text-muted: #6B7280;
+    --border: rgba(0,0,0,0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 2rem;
+    background: rgba(247,249,255,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-size: 1.5rem; font-weight: 900; letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #059669, #0D9488, #A78BFA);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .nav-cta {
+    background: var(--teal); color: white; border: none;
+    padding: 0.5rem 1.25rem; border-radius: 999px;
+    font-family: inherit; font-weight: 600; font-size: 0.875rem;
+    cursor: pointer; text-decoration: none; transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.85; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 6rem 2rem 4rem;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(6,214,160,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(167,139,250,0.1) 0%, transparent 50%);
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: rgba(13,148,136,0.1); color: var(--teal);
+    padding: 0.35rem 1rem; border-radius: 999px;
+    font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em;
+    margin-bottom: 1.5rem; position: relative; z-index: 1;
+    border: 1px solid rgba(13,148,136,0.2);
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 7vw, 5rem); font-weight: 900;
+    line-height: 1.05; letter-spacing: -0.04em;
+    max-width: 800px; margin-bottom: 1.5rem;
+    position: relative; z-index: 1;
+  }
+  .hero h1 span {
+    background: linear-gradient(135deg, #059669 0%, #0D9488 40%, #A78BFA 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    font-size: 1.15rem; color: var(--text-muted); max-width: 520px;
+    line-height: 1.7; margin-bottom: 2.5rem; position: relative; z-index: 1;
+  }
+  .hero-buttons { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; position: relative; z-index: 1; }
+  .btn-primary {
+    background: linear-gradient(135deg, #059669, #0D9488);
+    color: white; border: none; padding: 0.875rem 2rem;
+    border-radius: 999px; font-family: inherit; font-weight: 700;
+    font-size: 1rem; cursor: pointer; text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(13,148,136,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(13,148,136,0.4); }
+  .btn-secondary {
+    background: white; color: var(--text); border: 1px solid var(--border);
+    padding: 0.875rem 2rem; border-radius: 999px;
+    font-family: inherit; font-weight: 600; font-size: 1rem;
+    cursor: pointer; text-decoration: none; transition: border-color 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--teal); color: var(--teal); }
+
+  /* STATS */
+  .stats {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 2rem;
+    padding: 3rem 2rem; max-width: 700px; margin: 0 auto;
+  }
+  .stat { text-align: center; }
+  .stat-num { font-size: 2rem; font-weight: 900; color: var(--teal); letter-spacing: -0.03em; }
+  .stat-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+
+  /* SECTION */
+  section { padding: 5rem 2rem; }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+  .section-tag {
+    display: inline-block; background: rgba(13,148,136,0.08); color: var(--teal);
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 0.3rem 0.8rem; border-radius: 999px; margin-bottom: 1rem;
+  }
+  .section-title {
+    font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 800;
+    letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 1rem;
+  }
+  .section-desc { font-size: 1.05rem; color: var(--text-muted); max-width: 520px; line-height: 1.7; }
+
+  /* COM FUNCIONA */
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+  .step {
+    background: white; border: 1px solid var(--border); border-radius: 20px;
+    padding: 2rem 1.5rem; position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .step:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+  .step-num {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, rgba(5,150,105,0.12), rgba(167,139,250,0.12));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 1.1rem; color: var(--teal);
+    margin-bottom: 1rem;
+  }
+  .step h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .step p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+  .step-accent {
+    position: absolute; top: -20px; right: -20px;
+    width: 80px; height: 80px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(13,148,136,0.08) 0%, transparent 70%);
+  }
+
+  /* OBJECTES */
+  .categories { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2.5rem; }
+  .cat-pill {
+    background: white; border: 1px solid var(--border);
+    padding: 0.6rem 1.2rem; border-radius: 999px;
+    font-size: 0.9rem; font-weight: 500;
+    display: flex; align-items: center; gap: 0.5rem;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .cat-pill:hover { border-color: var(--teal); color: var(--teal); }
+  .cat-emoji { font-size: 1.1rem; }
+
+  /* PUNTS */
+  .points-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3rem; }
+  @media (max-width: 600px) { .points-grid { grid-template-columns: 1fr; } }
+  .point-card {
+    background: white; border: 1px solid var(--border); border-radius: 20px;
+    padding: 2rem; transition: transform 0.2s;
+  }
+  .point-card:hover { transform: translateY(-3px); }
+  .point-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+  .point-card h3 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .point-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+
+  /* CTA */
+  .cta-section {
+    background: linear-gradient(135deg, #059669 0%, #0D9488 50%, #0e8a82 100%);
+    padding: 5rem 2rem; text-align: center; position: relative; overflow: hidden;
+  }
+  .cta-section::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 80% 50%, rgba(167,139,250,0.2) 0%, transparent 60%);
+  }
+  .cta-section h2 {
+    color: white; font-size: clamp(1.75rem, 4vw, 3rem);
+    font-weight: 900; letter-spacing: -0.03em; margin-bottom: 1rem;
+    position: relative; z-index: 1;
+  }
+  .cta-section p {
+    color: rgba(255,255,255,0.8); font-size: 1.1rem;
+    margin-bottom: 2.5rem; position: relative; z-index: 1;
+  }
+  .cta-section .btn-white {
+    background: white; color: var(--teal);
+    border: none; padding: 0.875rem 2.5rem;
+    border-radius: 999px; font-family: inherit;
+    font-weight: 800; font-size: 1rem; cursor: pointer;
+    text-decoration: none; display: inline-block;
+    transition: transform 0.2s; position: relative; z-index: 1;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .cta-section .btn-white:hover { transform: translateY(-2px); }
+
+  /* MANIFESTO */
+  .manifesto {
+    background: var(--text); color: white;
+    padding: 5rem 2rem; text-align: center;
+  }
+  .manifesto blockquote {
+    font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 800;
+    letter-spacing: -0.03em; line-height: 1.2; max-width: 700px;
+    margin: 0 auto 1.5rem;
+  }
+  .manifesto blockquote span {
+    background: linear-gradient(135deg, #6EE7B7, #A78BFA);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .manifesto cite { color: rgba(255,255,255,0.4); font-style: normal; font-size: 0.9rem; }
+
+  /* FOOTER */
+  footer {
+    background: var(--text); color: rgba(255,255,255,0.4);
+    padding: 2rem; text-align: center; font-size: 0.85rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  footer strong { color: white; }
+
+  /* LOGO ICON */
+  .logo-icon {
+    display: inline-block; width: 32px; height: 32px;
+    vertical-align: middle; margin-right: 4px;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero > * { animation: fadeUp 0.6s ease both; }
+  .hero .hero-badge { animation-delay: 0.1s; }
+  .hero h1 { animation-delay: 0.2s; }
+  .hero p { animation-delay: 0.3s; }
+  .hero-buttons { animation-delay: 0.4s; }
+
+  /* FLOATING OBJECTS */
+  .floating-objects {
+    position: relative; z-index: 1;
+    display: flex; justify-content: center; gap: 1rem;
+    flex-wrap: wrap; margin-top: 3rem;
+    opacity: 0; animation: fadeUp 0.6s 0.6s ease both;
+  }
+  .obj-chip {
+    background: white; border: 1px solid var(--border);
+    padding: 0.5rem 1rem; border-radius: 999px;
+    font-size: 0.85rem; font-weight: 500; color: var(--text-muted);
+    display: flex; align-items: center; gap: 0.4rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">vira</div>
+  <a href="#early-access" class="nav-cta">Uneix-te a la llista</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-badge">🌿 En desenvolupament · Pròximament</div>
+  <h1>Les teves eines agafen pols.<br><span>Vira-les.</span></h1>
+  <p>Comparteix els objectes que no fas servir amb els teus veïns. Guanya punts, estalvia diners i ajuda la comunitat.</p>
+  <div class="hero-buttons">
+    <a href="#early-access" class="btn-primary">Apunta'm a la llista ✉️</a>
+    <a href="#com-funciona" class="btn-secondary">Com funciona →</a>
+  </div>
+  <div class="floating-objects">
+    <div class="obj-chip"><span>🔧</span> Trepant</div>
+    <div class="obj-chip"><span>🪜</span> Escala</div>
+    <div class="obj-chip"><span>🌿</span> Talladora gespa</div>
+    <div class="obj-chip"><span>🍲</span> Thermomix</div>
+    <div class="obj-chip"><span>⚡</span> Compressor</div>
+    <div class="obj-chip"><span>🏕️</span> Tenda de campanya</div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num">€0</div>
+    <div class="stat-label">Registre gratuït</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">6</div>
+    <div class="stat-label">Idiomes suportats</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">100%</div>
+    <div class="stat-label">Identitat verificada</div>
+  </div>
+</div>
+
+<!-- COM FUNCIONA -->
+<section id="com-funciona" style="background: white;">
+  <div class="section-inner">
+    <div class="section-tag">Com funciona</div>
+    <h2 class="section-title">Tan fàcil com demanar-ho<br>al veí del costat</h2>
+    <p class="section-desc">Tres passos i ja estàs dins. La verificació d'identitat fa que tothom sigui qui diu ser.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-accent"></div>
+        <div class="step-num">1</div>
+        <h3>Registra't i verifica't</h3>
+        <p>Crea el teu compte, verifica el teu DNI i afegeix una targeta. Com Airbnb, però pel barri.</p>
+      </div>
+      <div class="step">
+        <div class="step-accent"></div>
+        <div class="step-num">2</div>
+        <h3>Publica o demana</h3>
+        <p>Tens un trepant que no fas servir? Publica'l. Necessites una escala? Demana-la als veïns.</p>
+      </div>
+      <div class="step">
+        <div class="step-accent"></div>
+        <div class="step-num">3</div>
+        <h3>Presta i guanya</h3>
+        <p>L'objecte surt de casa, viatja pel barri, i sempre torna. Tu guanyes Mèrits amb cada préstec.</p>
+      </div>
+      <div class="step">
+        <div class="step-accent"></div>
+        <div class="step-num">4</div>
+        <h3>Paga amb punts</h3>
+        <p>Usa els Mèrits guanyats per demanar objectes als veïns. L'economia circular feta realitat.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OBJECTES -->
+<section>
+  <div class="section-inner" style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;">
+    <div>
+      <div class="section-tag">Objectes</div>
+      <h2 class="section-title">Eines, electrodomèstics, material de jardí...</h2>
+      <p class="section-desc">Qualsevol cosa que no facis servir cada dia pot virar pel barri i tornar a casa.</p>
+      <div class="categories">
+        <div class="cat-pill"><span class="cat-emoji">🔧</span> Eines manuals</div>
+        <div class="cat-pill"><span class="cat-emoji">⚡</span> Eines elèctriques</div>
+        <div class="cat-pill"><span class="cat-emoji">🍲</span> Electrodomèstics</div>
+        <div class="cat-pill"><span class="cat-emoji">🌿</span> Jardí</div>
+        <div class="cat-pill"><span class="cat-emoji">🏗️</span> Construcció</div>
+        <div class="cat-pill"><span class="cat-emoji">🏕️</span> Càmping i esport</div>
+        <div class="cat-pill"><span class="cat-emoji">🎉</span> Festa i celebracions</div>
+        <div class="cat-pill"><span class="cat-emoji">📷</span> Fotografia</div>
+      </div>
+    </div>
+    <div style="background: linear-gradient(135deg, rgba(5,150,105,0.06), rgba(167,139,250,0.08)); border-radius: 24px; padding: 2.5rem; border: 1px solid var(--border);">
+      <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1.5rem;">Preu per categoria</div>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: white; border-radius: 12px; border: 1px solid var(--border);">
+          <div><div style="font-weight: 700;">Petit</div><div style="font-size: 0.8rem; color: var(--text-muted);">tornavís, nivell...</div></div>
+          <div style="font-weight: 800; color: var(--teal);">50 pts/dia</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: white; border-radius: 12px; border: 1px solid var(--border);">
+          <div><div style="font-weight: 700;">Mitjà</div><div style="font-size: 0.8rem; color: var(--text-muted);">trepant, serra...</div></div>
+          <div style="font-weight: 800; color: var(--teal);">150 pts/dia</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: white; border-radius: 12px; border: 1px solid var(--border);">
+          <div><div style="font-weight: 700;">Gran</div><div style="font-size: 0.8rem; color: var(--text-muted);">escala, talladora...</div></div>
+          <div style="font-weight: 800; color: var(--teal);">300 pts/dia</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: white; border-radius: 12px; border: 1px solid var(--border);">
+          <div><div style="font-weight: 700;">Premium</div><div style="font-size: 0.8rem; color: var(--text-muted);">bastida, compressor...</div></div>
+          <div style="font-weight: 800; color: var(--teal);">500 pts/dia</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PUNTS -->
+<section style="background: white;">
+  <div class="section-inner">
+    <div class="section-tag">Sistema de punts</div>
+    <h2 class="section-title">Dos tipus de punts,<br>un sol objectiu</h2>
+    <p class="section-desc">L'economia de Vira premia la generositat i la confiança.</p>
+    <div class="points-grid">
+      <div class="point-card" style="border-top: 3px solid #059669;">
+        <span class="point-icon">🌿</span>
+        <h3>Mèrits</h3>
+        <p>Es guanyen prestant objectes, rebent bones valoracions i sent un veí de confiança. Representen la teva reputació. Mai es compren.</p>
+      </div>
+      <div class="point-card" style="border-top: 3px solid #A78BFA;">
+        <span class="point-icon">🟡</span>
+        <h3>Crèdits</h3>
+        <p>Es poden adquirir amb diners reals via Stripe. Visibles al perfil. El propietari veu sempre la composició de punts del sol·licitant.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GARANTIES -->
+<section>
+  <div class="section-inner" style="text-align: center; max-width: 700px; margin: 0 auto;">
+    <div class="section-tag">Confiança i garanties</div>
+    <h2 class="section-title">El sistema de confiança d'Airbnb, per al barri</h2>
+    <p class="section-desc" style="margin: 0 auto 3rem;">Verificació d'identitat amb DNI + selfie, fiança retinguda via Stripe i sistema de valoracions mútues. Tothom sap amb qui tracta.</p>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+      <div style="padding: 1.5rem; background: white; border-radius: 16px; border: 1px solid var(--border);">
+        <div style="font-size: 2rem; margin-bottom: 0.75rem;">🪪</div>
+        <div style="font-weight: 700; margin-bottom: 0.4rem;">Identitat real</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">DNI + selfie via Stripe Identity</div>
+      </div>
+      <div style="padding: 1.5rem; background: white; border-radius: 16px; border: 1px solid var(--border);">
+        <div style="font-size: 2rem; margin-bottom: 0.75rem;">💳</div>
+        <div style="font-weight: 700; margin-bottom: 0.4rem;">Fiança retinguda</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">Bloquejada via Stripe, com en un hotel</div>
+      </div>
+      <div style="padding: 1.5rem; background: white; border-radius: 16px; border: 1px solid var(--border);">
+        <div style="font-size: 2rem; margin-bottom: 0.75rem;">⭐</div>
+        <div style="font-weight: 700; margin-bottom: 0.4rem;">Valoracions mútues</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">Reputació transparent i visible</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<div class="manifesto">
+  <blockquote>"Les coses viren en totes direccions<br>i <span>tornen a l'origen.</span>"</blockquote>
+  <cite>— Filosofia Vira</cite>
+</div>
+
+<!-- EARLY ACCESS -->
+<section id="early-access" style="background: white; padding: 5rem 2rem;">
+  <div class="section-inner" style="text-align: center; max-width: 560px; margin: 0 auto;">
+    <div class="section-tag">Aviat disponible</div>
+    <h2 class="section-title">Sigues dels primers al barri</h2>
+    <p class="section-desc" style="margin: 0 auto 2.5rem;">Apunta't a la llista d'espera i t'avisarem quan Vira arribi al teu barri. Sense spam, promès.</p>
+    <div style="display: flex; gap: 0.75rem; max-width: 420px; margin: 0 auto; flex-wrap: wrap; justify-content: center;">
+      <input type="email" placeholder="el.teu@email.com" style="flex: 1; min-width: 200px; padding: 0.875rem 1.25rem; border: 1.5px solid var(--border); border-radius: 999px; font-family: inherit; font-size: 1rem; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='#0D9488'" onblur="this.style.borderColor='rgba(0,0,0,0.08)'">
+      <button onclick="handleSignup()" class="btn-primary" style="white-space: nowrap;">Apunta'm!</button>
+    </div>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">Llançament hiperlocal · Primer barri: pendent d'anunciar</p>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<div class="cta-section">
+  <h2>Tens un trepant?<br>Viral!</h2>
+  <p>No deixis que les teves eines agafin pols.</p>
+  <a href="#early-access" class="btn-white">Uneix-te a Vira →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p style="font-size: 1.1rem; font-weight: 900; color: white; margin-bottom: 0.5rem;">vira</p>
+  <p>Les coses viren en totes direccions i tornen a l'origen.</p>
+  <p style="margin-top: 1rem;">© 2026 Vira · Construït amb ❤️ al barri</p>
+</footer>
+
+<script>
+function handleSignup() {
+  const input = document.querySelector('input[type="email"]');
+  const val = input.value.trim();
+  if (!val || !val.includes('@')) {
+    input.style.borderColor = '#E24B4A';
+    input.placeholder = 'Introdueix un email vàlid';
+    setTimeout(() => {
+      input.style.borderColor = 'rgba(0,0,0,0.08)';
+      input.placeholder = 'el.teu@email.com';
+    }, 2000);
+    return;
+  }
+  const btn = document.querySelector('button');
+  btn.textContent = '✅ Apuntat!';
+  btn.style.background = 'linear-gradient(135deg, #059669, #0D9488)';
+  input.value = '';
+  input.disabled = true;
+  btn.disabled = true;
+}
+
+// Responsive two-col → one-col for middle section
+if (window.innerWidth < 768) {
+  const twoCol = document.querySelector('[style*="grid-template-columns: 1fr 1fr"]');
+  if (twoCol) twoCol.style.gridTemplateColumns = '1fr';
+  const threeCol = document.querySelector('[style*="repeat(3, 1fr)"]');
+  if (threeCol) threeCol.style.gridTemplateColumns = '1fr';
+}
+</script>
+</body>
+</html>
